@@ -1,0 +1,21 @@
+# SigmaRest
+A RESTful interface shell project for Sigma and SigmaNLP
+
+This assumes you've already installed Tomcat and SigmaKEE.  Just compile
+this project with Ant and restart Tomcat.  Then invoke the following
+in your browser to initialize Sigma
+
+http://localhost:8080/sigmarest/resources/init
+
+then test with
+
+http://localhost:8080/sigmarest/resources/test?test=WearableItem
+
+you should see a list of SUMO subclasses such as 
+
+PersonalAdornment, Jewelry, Pearl...
+
+At that point, if it's all working, you can follow a tutorial on setting
+up a RESTful client as appropriate and/or expand the functionality of the
+existing SigmaResource.java class to expose more of the SigmaKEE api in
+RESTful form.
