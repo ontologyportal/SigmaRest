@@ -13,7 +13,13 @@ http://localhost:8080/sigmarest/resources/test?test=WearableItem
 
 you should see a list of SUMO subclasses such as 
 
-PersonalAdornment, Jewelry, Pearl...
+[Sock, UniformClothing, Dishdashah, Oqal, Jewelry, SafetyHarness,
+Sleeve, Cloak, Tagiyyah, Kufiyyah, Shirt, Veil, OutdoorClothing,
+Abayah, Shimagh, Collar, Coat, Misbahah, Glove, Sandal, Dress,
+Clothing, ProtectiveEyewear, MotorcycleGlove, Respirator, Earphone,
+Apron, Niqab, Shoe, SafetyVest, Hijab, Trousers, TieClothing, Pearl,
+PersonalAdornment, Khimar, Belt, Jilbab, HearingProtection, BowlingShoe,
+Hat, Gutrah, Jallabiyyah]
 
 At that point, if it's all working, you can follow a tutorial on setting
 up a RESTful client as appropriate and/or expand the functionality of the
