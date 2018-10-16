@@ -11,7 +11,9 @@ import com.articulate.sigma.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 @Path("/")
 public class SigmaResource {
@@ -47,12 +49,29 @@ public class SigmaResource {
         return Response.status(200).entity(response.toString()).build();
     }
 
+    @Path("wsd")
+    @GET
+    public Response wsd(
+            @DefaultValue("Object") @QueryParam("term") String term,
+            @DefaultValue("") @QueryParam("sentence") String sent) {
+        List<String> words = Arrays.asList(sent.split(" "));
+        String candidateSynset = WSD.findWordSenseInContext(term, words);
+        return Response.status(200).entity(candidateSynset).build();
+    }
+
     @Path("init")
     @GET
     public Response init() {
 
         KBmanager.getMgr().initializeOnce();
         return Response.status(200).entity("Sigma init completed").build();
+    }
+
+    @Path("initnlp")
+    @GET
+    public Response initnlp() {
+
+        return Response.status(200).entity("SigmaNLP init completed").build();
     }
 
     @POST
