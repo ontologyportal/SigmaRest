@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
@@ -46,6 +47,23 @@ public class SigmaResource {
     public Response term(
             @DefaultValue("Object") @QueryParam("term") String term) {
         HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildClasses(term);
+        return Response.status(200).entity(response.toString()).build();
+    }
+
+    @Path("getAllSub")
+    @GET
+    public Response getAllSub(
+            @DefaultValue("Object") @QueryParam("term") String term,
+            @DefaultValue("subclass") @QueryParam("rel") String rel) {
+        HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildTerms(term,rel);
+        return Response.status(200).entity(response.toString()).build();
+    }
+
+    @Path("getWords")
+    @GET
+    public Response getWords(
+            @DefaultValue("Object") @QueryParam("term") String term) {
+        Collection<String> response = WordNet.wn.getWordsFromTerm(term).keySet();
         return Response.status(200).entity(response.toString()).build();
     }
 
