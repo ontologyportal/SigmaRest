@@ -7,6 +7,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import com.articulate.sigma.*;
+import com.articulate.sigma.trans.TPTP3ProofProcessor;
+import com.articulate.sigma.tp.Vampire;
+import com.articulate.sigma.wordNet.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -18,6 +21,8 @@ import java.util.List;
 
 @Path("/")
 public class SigmaResource {
+
+    KB kb = null;
 
     @GET
     @Path("helloworld")
@@ -46,6 +51,7 @@ public class SigmaResource {
     @GET
     public Response term(
             @DefaultValue("Object") @QueryParam("term") String term) {
+
         HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildClasses(term);
         return Response.status(200).entity(response.toString()).build();
     }
@@ -53,6 +59,7 @@ public class SigmaResource {
     @Path("getAllSub")
     @GET
     public Response getAllSub(
+
             @DefaultValue("Object") @QueryParam("term") String term,
             @DefaultValue("subclass") @QueryParam("rel") String rel) {
         HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildTerms(term,rel);
@@ -62,6 +69,7 @@ public class SigmaResource {
     @Path("getWords")
     @GET
     public Response getWords(
+
             @DefaultValue("Object") @QueryParam("term") String term) {
         Collection<String> response = WordNet.wn.getWordsFromTerm(term).keySet();
         return Response.status(200).entity(response.toString()).build();
@@ -72,9 +80,26 @@ public class SigmaResource {
     public Response wsd(
             @DefaultValue("Object") @QueryParam("term") String term,
             @DefaultValue("") @QueryParam("sentence") String sent) {
+
         List<String> words = Arrays.asList(sent.split(" "));
         String candidateSynset = WSD.findWordSenseInContext(term, words);
         return Response.status(200).entity(candidateSynset).build();
+    }
+
+    @Path("query")
+    @GET
+    public Response query(
+            @DefaultValue("(subclass ?X Object)") @QueryParam("query") String query,
+            @DefaultValue("30") @QueryParam("timeout") int timeout) {
+
+        com.articulate.sigma.trans.TPTP3ProofProcessor tpp = null;
+        kb = KBmanager.getMgr().getKB("SUMO");
+        kb.loadVampire();
+        Vampire vamp = kb.askVampire(query, timeout, 1);
+        System.out.println("KB.main(): completed query with result: " + StringUtil.arrayListToCRLFString(vamp.output));
+        tpp = new TPTP3ProofProcessor();
+        tpp.parseProofOutput(vamp.output, query, kb);
+        return Response.status(200).entity(tpp.bindings + "\n\n" + tpp.proof).build();
     }
 
     @Path("init")
