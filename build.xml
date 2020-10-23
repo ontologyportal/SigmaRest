@@ -23,7 +23,12 @@
         <echo>Java Version System Prop: ${java.version}</echo>
     </target>
 
-    <target name="compile" depends="init" description="Compile the project and place in ${build.classes}.">
+    <target name="sigma">
+        <ant antfile="../sigmakee/build.xml" inheritAll="false" target="all" />
+        <copy todir="${basedir}/lib" file="${env.SIGMA_SRC}/build/sigmakee.jar" />
+    </target>
+
+    <target name="compile" depends="init,sigma" description="Compile the project and place in ${build.classes}.">
         <mkdir dir="${build.classes}"/>
         <javac destdir="${build.classes}" debug="on" optimize="on" deprecation="on" classpathref="compile.classpath">
             <src refid="core.sourcepath"/>
