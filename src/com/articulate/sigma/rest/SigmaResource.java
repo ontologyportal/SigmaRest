@@ -14,16 +14,15 @@ import com.articulate.sigma.wordNet.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Path("/")
 public class SigmaResource {
 
     public static KB kb = null;
 
+    /*****************************************************************
+     */
     @GET
     @Path("helloworld")
     @Produces("text/plain")
@@ -47,6 +46,8 @@ public class SigmaResource {
         //return "Rest Never Sleeps";
     }
 
+    /*****************************************************************
+     */
     @Path("term")
     @GET
     public Response term(
@@ -60,25 +61,44 @@ public class SigmaResource {
         return Response.status(200).entity(response.toString()).build();
     }
 
+    /*****************************************************************
+     */
     @Path("getAllSub")
     @GET
     public Response getAllSub(
-
             @DefaultValue("Object") @QueryParam("term") String term,
             @DefaultValue("subclass") @QueryParam("rel") String rel) {
 
         if (!kb.containsTerm(term))
             return Response.status(200).entity("no such term in KB: " + term).build();
-        HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildTerms(term,rel);
+        HashSet<String> response = kb.kbCache.getChildTerms(term,rel);
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
     }
 
+    /*****************************************************************
+     */
+    @Path("getNearestTerms")
+    @GET
+    public Response getNearestTerms(
+            @DefaultValue("Object") @QueryParam("term") String term) {
+
+        ArrayList<String> response = null;
+        if (Character.isLowerCase(term.charAt(0)))
+            response = kb.getNearestRelations(term);
+        else
+            response = kb.getNearestNonRelations(term);
+        if (response == null)
+            return Response.status(200).entity("no results for term: " + term).build();
+        return Response.status(200).entity(response.toString()).build();
+    }
+
+    /*****************************************************************
+     */
     @Path("getWords")
     @GET
     public Response getWords(
-
             @DefaultValue("Object") @QueryParam("term") String term) {
 
         if (!kb.containsTerm(term))
@@ -89,6 +109,8 @@ public class SigmaResource {
         return Response.status(200).entity(response.toString()).build();
     }
 
+    /*****************************************************************
+     */
     @Path("wsd")
     @GET
     public Response wsd(
@@ -100,6 +122,8 @@ public class SigmaResource {
         return Response.status(200).entity(candidateSynset).build();
     }
 
+    /*****************************************************************
+     */
     @Path("query")
     @GET
     public Response query(
@@ -107,7 +131,6 @@ public class SigmaResource {
             @DefaultValue("30") @QueryParam("timeout") int timeout) {
 
         com.articulate.sigma.trans.TPTP3ProofProcessor tpp = null;
-        kb = KBmanager.getMgr().getKB("SUMO");
         kb.loadVampire();
         Vampire vamp = kb.askVampire(query, timeout, 1);
         if (vamp == null)
@@ -118,6 +141,8 @@ public class SigmaResource {
         return Response.status(200).entity(tpp.bindings + "\n\n" + tpp.proof).build();
     }
 
+    /*****************************************************************
+     */
     @Path("init")
     @GET
     public Response init() {
@@ -127,6 +152,8 @@ public class SigmaResource {
         return Response.status(200).entity("Sigma init completed").build();
     }
 
+    /*****************************************************************
+     */
     @Path("initnlp")
     @GET
     public Response initnlp() {
@@ -134,6 +161,8 @@ public class SigmaResource {
         return Response.status(200).entity("SigmaNLP init completed").build();
     }
 
+    /*****************************************************************
+     */
     @POST
     @Path("posting")
     public Response posting(InputStream incomingData) {
