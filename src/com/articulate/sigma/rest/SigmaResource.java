@@ -22,7 +22,7 @@ import java.util.List;
 @Path("/")
 public class SigmaResource {
 
-    KB kb = null;
+    public static KB kb = null;
 
     @GET
     @Path("helloworld")
@@ -52,7 +52,11 @@ public class SigmaResource {
     public Response term(
             @DefaultValue("Object") @QueryParam("term") String term) {
 
+        if (!kb.containsTerm(term))
+            return Response.status(200).entity("no such term in KB: " + term).build();
         HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildClasses(term);
+        if (response == null)
+            return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
     }
 
@@ -62,7 +66,12 @@ public class SigmaResource {
 
             @DefaultValue("Object") @QueryParam("term") String term,
             @DefaultValue("subclass") @QueryParam("rel") String rel) {
+
+        if (!kb.containsTerm(term))
+            return Response.status(200).entity("no such term in KB: " + term).build();
         HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildTerms(term,rel);
+        if (response == null)
+            return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
     }
 
@@ -71,7 +80,12 @@ public class SigmaResource {
     public Response getWords(
 
             @DefaultValue("Object") @QueryParam("term") String term) {
+
+        if (!kb.containsTerm(term))
+            return Response.status(200).entity("no such term in KB: " + term).build();
         Collection<String> response = WordNet.wn.getWordsFromTerm(term).keySet();
+        if (response == null)
+            return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
     }
 
@@ -96,6 +110,8 @@ public class SigmaResource {
         kb = KBmanager.getMgr().getKB("SUMO");
         kb.loadVampire();
         Vampire vamp = kb.askVampire(query, timeout, 1);
+        if (vamp == null)
+            return Response.status(200).entity("no results or error").build();
         System.out.println("KB.main(): completed query with result: " + StringUtil.arrayListToCRLFString(vamp.output));
         tpp = new TPTP3ProofProcessor();
         tpp.parseProofOutput(vamp.output, query, kb);
@@ -107,6 +123,7 @@ public class SigmaResource {
     public Response init() {
 
         KBmanager.getMgr().initializeOnce();
+        kb = KBmanager.getMgr().getKB("SUMO");
         return Response.status(200).entity("Sigma init completed").build();
     }
 
