@@ -16,6 +16,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
+import org.json.simple.JSONAware;
+import org.json.simple.JSONValue;
+
 @Path("/")
 public class SigmaResource {
 
@@ -89,6 +92,22 @@ public class SigmaResource {
             response = kb.getNearestRelations(term);
         else
             response = kb.getNearestNonRelations(term);
+        if (response == null)
+            return Response.status(200).entity("no results for term: " + term).build();
+        return Response.status(200).entity(response.toString()).build();
+    }
+
+    /*****************************************************************
+     */
+    @Path("generateSemNetNeighbors")
+    @GET
+    public Response generateSemNetNeighbors(
+            @DefaultValue("Object") @QueryParam("term") String term,
+            @DefaultValue("1") @QueryParam("depth") String depth) {
+
+        KButilities kbu = new KButilities();
+        Set<KButilities.GraphArc> ts = kbu.generateSemNetNeighbors(kb,false,true,false,term,Integer.parseInt(depth));
+        String response = JSONValue.toJSONString(ts).replaceAll("\\{\"","\n\\{\"");
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
