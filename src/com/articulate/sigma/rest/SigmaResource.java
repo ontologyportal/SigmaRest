@@ -103,10 +103,14 @@ public class SigmaResource {
     @GET
     public Response generateSemNetNeighbors(
             @DefaultValue("Object") @QueryParam("term") String term,
-            @DefaultValue("1") @QueryParam("depth") String depth) {
+            @DefaultValue("1") @QueryParam("depth") String depth,
+            @DefaultValue("false") @QueryParam("axioms") String axioms) {
 
         KButilities kbu = new KButilities();
-        Set<KButilities.GraphArc> ts = kbu.generateSemNetNeighbors(kb,false,true,false,term,Integer.parseInt(depth));
+        boolean links = false;
+        if (axioms.equals("true"))
+            links = true;
+        Set<KButilities.GraphArc> ts = kbu.generateSemNetNeighbors(kb,false,true,links,term,Integer.parseInt(depth));
         String response = JSONValue.toJSONString(ts).replaceAll("\\{\"","\n\\{\"");
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
