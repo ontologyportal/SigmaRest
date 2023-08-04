@@ -161,7 +161,7 @@ public class SigmaResource {
             return Response.status(200).entity("no results or error").build();
         System.out.println("KB.main(): completed query with result: " + StringUtil.arrayListToCRLFString(vamp.output));
         tpp = new TPTP3ProofProcessor();
-        tpp.parseProofOutput(query, kb);
+        tpp.parseProofOutput(vamp.output, query, kb, vamp.qlist);
         return Response.status(200).entity(tpp.bindings + "\n\n" + tpp.proof).build();
     }
 
