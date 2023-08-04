@@ -19,6 +19,7 @@ import java.util.*;
 
 import org.json.simple.JSONAware;
 import org.json.simple.JSONValue;
+import tptp_parser.TPTPFormula;
 
 @Path("/")
 public class SigmaResource {
@@ -162,7 +163,22 @@ public class SigmaResource {
         System.out.println("KB.main(): completed query with result: " + StringUtil.arrayListToCRLFString(vamp.output));
         tpp = new TPTP3ProofProcessor();
         tpp.parseProofOutput(vamp.output, query, kb, vamp.qlist);
-        return Response.status(200).entity(tpp.bindings + "\n\n" + tpp.proof).build();
+        StringBuffer proofsb = new StringBuffer();
+        for (TPTPFormula form : tpp.proof) {
+            proofsb.append(form.toString() + "\n");
+        }
+        return Response.status(200).entity(tpp.bindingMap + "\n\n" + proofsb.toString()).build();
+    }
+
+    /*****************************************************************
+     */
+    @Path("tell")
+    @GET
+    public Response tell(
+            @DefaultValue("(instance Foo Object)") @QueryParam("form") String form) {
+
+        String res = kb.tell(form);
+        return Response.status(200).entity(res).build();
     }
 
     /*****************************************************************
