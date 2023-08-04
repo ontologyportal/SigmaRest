@@ -10,6 +10,7 @@ import com.articulate.sigma.*;
 import com.articulate.sigma.trans.TPTP3ProofProcessor;
 import com.articulate.sigma.tp.Vampire;
 import com.articulate.sigma.wordNet.*;
+import com.articulate.sigma.utils.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -58,7 +59,7 @@ public class SigmaResource {
 
         if (!kb.containsTerm(term))
             return Response.status(200).entity("no such term in KB: " + term).build();
-        HashSet<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildClasses(term);
+        Set<String> response = KBmanager.getMgr().getKB("SUMO").kbCache.getChildClasses(term);
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
@@ -74,7 +75,7 @@ public class SigmaResource {
 
         if (!kb.containsTerm(term))
             return Response.status(200).entity("no such term in KB: " + term).build();
-        HashSet<String> response = kb.kbCache.getChildTerms(term,rel);
+        Set<String> response = kb.kbCache.getChildTerms(term,rel);
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
@@ -160,7 +161,7 @@ public class SigmaResource {
             return Response.status(200).entity("no results or error").build();
         System.out.println("KB.main(): completed query with result: " + StringUtil.arrayListToCRLFString(vamp.output));
         tpp = new TPTP3ProofProcessor();
-        tpp.parseProofOutput(vamp.output, query, kb);
+        tpp.parseProofOutput(query, kb);
         return Response.status(200).entity(tpp.bindings + "\n\n" + tpp.proof).build();
     }
 
