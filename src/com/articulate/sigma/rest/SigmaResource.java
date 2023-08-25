@@ -23,8 +23,111 @@ import tptp_parser.TPTPFormula;
 
 @Path("/")
 public class SigmaResource {
-
     public static KB kb = null;
+
+    /*****************************************************************
+     */
+    @Path("init")
+    @GET
+    public Response init() {
+        KBmanager.getMgr().initializeOnce();
+        try {
+            SigmaResource.kb = KBmanager.getMgr().getKB("SUMO");
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return Response.serverError().entity(e.toString()).build();
+        }
+        return Response.ok("Sigma init completed").build();
+    }
+
+    @Path("reset")
+    @GET
+    public Response reset() {
+        try {
+            KB kb = SigmaResource.kb;
+            kb.deleteUserAssertionsAndReload();
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return Response.serverError().entity(e.toString()).build();
+        }
+        return Response.ok("Sigma reset completed").build();
+    }
+
+    @Path("ask")
+    @GET
+    @Produces("application/json")
+    public Response query(
+            @DefaultValue("(subclass ?X Object)") @QueryParam("query") String query,
+            @DefaultValue("30") @QueryParam("timeout") int timeout) {
+        KB kb = SigmaResource.kb;
+        long start = System.currentTimeMillis();
+        TPTP3ProofProcessor tpp = null;
+        kb.loadVampire();
+        Vampire vamp = kb.askVampire(query, timeout, 10);
+        tpp = new TPTP3ProofProcessor();
+        tpp.parseProofOutput(vamp.output, query, kb, vamp.qlist);
+        long end = System.currentTimeMillis();
+        double durationS = (end - start) / 1000.0;
+
+        String tor = "{\"bindings\": " + this.toJSON(tpp.bindingMap)
+                + ", \"proof\": " + this.toJSON(tpp.proof)
+                + ", \"time\": " + durationS;
+        if (durationS >= timeout) {
+            tor += ", \"error\": \"timeout\"}";
+            return Response.serverError().entity(tor).build();
+        }
+        tor += "}";
+        return Response.ok(tor).build();
+    }
+
+    @Path("tell")
+    @GET
+    public Response tell(
+            @DefaultValue("Object") @QueryParam("statement") String statement) {
+        KB kb = SigmaResource.kb;
+        String resp = kb.tell(statement);
+        return Response.ok(resp).build();
+    }
+
+    private String toJSON(Set<String> data) {
+        String tor = "[";
+        for (String d : data) {
+            if (tor.length() > 1)
+                tor += ", ";
+            tor += d;
+        }
+        tor += "]";
+        return tor;
+    }
+
+    private <T extends Object> String toJSON(List<T> data) {
+        String tor = "[";
+        for (T d : data) {
+            if (tor.length() > 1)
+                tor += ", ";
+            tor += "\"" + d.toString() + "\"";
+        }
+        tor += "]";
+        return tor;
+    }
+
+    private String toJSON(Map<String, String> data) {
+        String tor = "{";
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            if (tor.length() > 1)
+                tor += ", ";
+            tor += "\"" + key + "\": " + "\"" + value + "\"";
+        }
+        tor += "}";
+        return tor;
+    }
+
+    // ###############################################################
+    // NOT UPDATED TO USE JSON
+    // ###############################################################
 
     /*****************************************************************
      */
@@ -40,15 +143,14 @@ public class SigmaResource {
             while ((line = in.readLine()) != null) {
                 crunchifyBuilder.append(line);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error Parsing: - ");
         }
         System.out.println("Data Received: " + crunchifyBuilder.toString());
 
         // return HTTP response 200 in case of success
         return crunchifyBuilder.toString();
-        //return "Rest Never Sleeps";
+        // return "Rest Never Sleeps";
     }
 
     /*****************************************************************
@@ -76,7 +178,7 @@ public class SigmaResource {
 
         if (!kb.containsTerm(term))
             return Response.status(200).entity("no such term in KB: " + term).build();
-        Set<String> response = kb.kbCache.getChildTerms(term,rel);
+        Set<String> response = kb.kbCache.getChildTerms(term, rel);
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
@@ -112,8 +214,9 @@ public class SigmaResource {
         boolean links = false;
         if (axioms.equals("true"))
             links = true;
-        Set<KButilities.GraphArc> ts = kbu.generateSemNetNeighbors(kb,false,true,links,term,Integer.parseInt(depth));
-        String response = JSONValue.toJSONString(ts).replaceAll("\\{\"","\n\\{\"");
+        Set<KButilities.GraphArc> ts = kbu.generateSemNetNeighbors(kb, false, true, links, term,
+                Integer.parseInt(depth));
+        String response = JSONValue.toJSONString(ts).replaceAll("\\{\"", "\n\\{\"");
         if (response == null)
             return Response.status(200).entity("no results for term: " + term).build();
         return Response.status(200).entity(response.toString()).build();
@@ -149,51 +252,6 @@ public class SigmaResource {
 
     /*****************************************************************
      */
-    @Path("query")
-    @GET
-    public Response query(
-            @DefaultValue("(subclass ?X Object)") @QueryParam("query") String query,
-            @DefaultValue("30") @QueryParam("timeout") int timeout) {
-
-        com.articulate.sigma.trans.TPTP3ProofProcessor tpp = null;
-        kb.loadVampire();
-        Vampire vamp = kb.askVampire(query, timeout, 1);
-        if (vamp == null)
-            return Response.status(200).entity("no results or error").build();
-        System.out.println("KB.main(): completed query with result: " + StringUtil.arrayListToCRLFString(vamp.output));
-        tpp = new TPTP3ProofProcessor();
-        tpp.parseProofOutput(vamp.output, query, kb, vamp.qlist);
-        StringBuffer proofsb = new StringBuffer();
-        for (TPTPFormula form : tpp.proof) {
-            proofsb.append(form.toString() + "\n");
-        }
-        return Response.status(200).entity(tpp.bindingMap + "\n\n" + proofsb.toString()).build();
-    }
-
-    /*****************************************************************
-     */
-    @Path("tell")
-    @GET
-    public Response tell(
-            @DefaultValue("(instance Foo Object)") @QueryParam("form") String form) {
-
-        String res = kb.tell(form);
-        return Response.status(200).entity(res).build();
-    }
-
-    /*****************************************************************
-     */
-    @Path("init")
-    @GET
-    public Response init() {
-
-        KBmanager.getMgr().initializeOnce();
-        kb = KBmanager.getMgr().getKB("SUMO");
-        return Response.status(200).entity("Sigma init completed").build();
-    }
-
-    /*****************************************************************
-     */
     @Path("initnlp")
     @GET
     public Response initnlp() {
@@ -214,8 +272,7 @@ public class SigmaResource {
             while ((line = in.readLine()) != null) {
                 crunchifyBuilder.append(line);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error Parsing: - ");
         }
         System.out.println("Data Received: " + crunchifyBuilder.toString());
