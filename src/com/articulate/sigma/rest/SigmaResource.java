@@ -30,35 +30,44 @@ public class SigmaResource {
     @Path("init")
     @GET
     public Response init() {
+
         KBmanager.getMgr().initializeOnce();
         try {
             SigmaResource.kb = KBmanager.getMgr().getKB("SUMO");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.out.println(e.toString());
             return Response.serverError().entity(e.toString()).build();
         }
         return Response.ok("Sigma init completed").build();
     }
 
+    /*****************************************************************
+     */
     @Path("reset")
     @GET
     public Response reset() {
+
         try {
             KB kb = SigmaResource.kb;
             kb.deleteUserAssertionsAndReload();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.out.println(e.toString());
             return Response.serverError().entity(e.toString()).build();
         }
         return Response.ok("Sigma reset completed").build();
     }
 
+    /*****************************************************************
+     */
     @Path("ask")
     @GET
     @Produces("application/json")
     public Response query(
             @DefaultValue("(subclass ?X Object)") @QueryParam("query") String query,
             @DefaultValue("30") @QueryParam("timeout") int timeout) {
+
         KB kb = SigmaResource.kb;
         long start = System.currentTimeMillis();
         TPTP3ProofProcessor tpp = null;
@@ -80,16 +89,22 @@ public class SigmaResource {
         return Response.ok(tor).build();
     }
 
+    /*****************************************************************
+     */
     @Path("tell")
     @GET
     public Response tell(
             @DefaultValue("Object") @QueryParam("statement") String statement) {
+
         KB kb = SigmaResource.kb;
         String resp = kb.tell(statement);
         return Response.ok(resp).build();
     }
 
+    /*****************************************************************
+     */
     private String toJSON(Set<String> data) {
+
         String tor = "[";
         for (String d : data) {
             if (tor.length() > 1)
@@ -100,7 +115,10 @@ public class SigmaResource {
         return tor;
     }
 
+    /*****************************************************************
+     */
     private <T extends Object> String toJSON(List<T> data) {
+
         String tor = "[";
         for (T d : data) {
             if (tor.length() > 1)
@@ -111,7 +129,10 @@ public class SigmaResource {
         return tor;
     }
 
+    /*****************************************************************
+     */
     private String toJSON(Map<String, String> data) {
+
         String tor = "{";
         for (Map.Entry<String, String> entry : data.entrySet()) {
             String key = entry.getKey();
@@ -124,10 +145,6 @@ public class SigmaResource {
         tor += "}";
         return tor;
     }
-
-    // ###############################################################
-    // NOT UPDATED TO USE JSON
-    // ###############################################################
 
     /*****************************************************************
      */
@@ -143,7 +160,8 @@ public class SigmaResource {
             while ((line = in.readLine()) != null) {
                 crunchifyBuilder.append(line);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.out.println("Error Parsing: - ");
         }
         System.out.println("Data Received: " + crunchifyBuilder.toString());
