@@ -26,6 +26,7 @@ public class SigmaResource {
     public static KB kb = null;
 
     /*****************************************************************
+     * Initialize Sigma.  This is required before any other calls.
      */
     @Path("init")
     @GET
@@ -43,6 +44,8 @@ public class SigmaResource {
     }
 
     /*****************************************************************
+     * Delete all user assertions and reload all files specified in
+     * config.xml
      */
     @Path("reset")
     @GET
@@ -60,6 +63,8 @@ public class SigmaResource {
     }
 
     /*****************************************************************
+     * Query Vampire and return proof as a JSON, or an error string if
+     * no result.
      */
     @Path("ask")
     @GET
@@ -90,6 +95,8 @@ public class SigmaResource {
     }
 
     /*****************************************************************
+     * Assert a single statement to the knowledge base, including
+     * translation to TPTP for use by the theorem prover
      */
     @Path("tell")
     @GET
@@ -144,31 +151,6 @@ public class SigmaResource {
         }
         tor += "}";
         return tor;
-    }
-
-    /*****************************************************************
-     */
-    @GET
-    @Path("helloworld")
-    @Produces("text/plain")
-    public String getMessage(InputStream incomingData) {
-
-        StringBuilder crunchifyBuilder = new StringBuilder();
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(incomingData));
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                crunchifyBuilder.append(line);
-            }
-        }
-        catch (Exception e) {
-            System.out.println("Error Parsing: - ");
-        }
-        System.out.println("Data Received: " + crunchifyBuilder.toString());
-
-        // return HTTP response 200 in case of success
-        return crunchifyBuilder.toString();
-        // return "Rest Never Sleeps";
     }
 
     /*****************************************************************
