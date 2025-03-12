@@ -1,65 +1,130 @@
-<project name="SigmaRest" default="all" basedir=".">
+<project xmlns:ivy="antlib:org.apache.ivy.ant"
+         name="SigmaRest" default="all" basedir=".">
 
-    <target name="init">
-        <property name="app.name" value="sigmarest"/>
-        <property name="build.home" value="build"/>
-        <property name="build.classes" value="${build.home}/classes"/>
-        <property name="build.lib" value="${build.home}/lib"/>
-        <property environment="env"/>
-        <property name="git.home" value="${env.ONTOLOGYPORTAL_GIT}"/>
-        <property name="tomcat.home" value="${env.CATALINA_HOME}"/>
-        <property name="tptp.home" value="${git.home}/TPTP-ANTLR"/>
-        <property name="sigma.home" value="${env.SIGMA_HOME}"/>
-        <property name="kbs.home" value="${sigma.home}/KBs" />
-        <property name="dist.home" value="${tomcat.home}/webapps"/>
-        <property name="deploy.home" value="${tomcat.home}/webapps/${app.name}"/>
-        <property name="deploy.classes" value="${deploy.home}/WEB-INF/classes"/>
-        <property name="deploy.lib" value="${deploy.home}/WEB-INF/lib"/>
-        <property name="dist.war" value="sigmarest.war"/>
+    <!--
+    ===
+    IVY
+    ===
+    -->
 
-        <echo message="CATALINA_HOME is set to = ${env.CATALINA_HOME}"/>
-        <echo message="SIGMA_HOME is set to = ${env.SIGMA_HOME}"/>
-        <echo message="SIGMA_SRC is set to = ${env.SIGMA_SRC}"/>
-        <echo message="KBs_HOME is set to = ${kbs.home}" />
-        <echo>Java Version via Ant: ${ant.java.version}</echo>
-        <echo>Java Version System Prop: ${java.version}</echo>
+    <property name="ivy.install.version" value="2.5.1"/>
+    <property name="ivy.home" value="${basedir}/.ivy"/>
+    <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+
+    <target name="check.for.ivy.jar">
+        <available file="${ivy.jar.file}" property="ivy.present"/>
     </target>
 
-    <target name="sigma">
+    <target name="download-ivy" depends="check.for.ivy.jar" unless="ivy.present">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <!-- download Ivy from web site so that it can be used even without any special installation -->
+        <get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+             dest="${ivy.jar.file}" usetimestamp="true"/>
+    </target>
+
+    <target name="init-ivy" depends="download-ivy">
+        <!-- try to load Ivy here from Ivy home, in case the user has not already dropped
+             it into Ant's lib dir (note that the latter copy will always take precedence).
+             We will not fail as long as local lib dir exists (it may be empty) and
+             Ivy is in at least one of Ant's lib dir or the local lib dir. -->
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml"
+                 uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+        <ivy:retrieve/>
+
+        <path id="compile.classpath">
+            <fileset dir="${basedir}/lib">
+                <include name="*.jar"/>
+            </fileset>
+        </path>
+        <path id="runtime.classpath">
+            <path refid="compile.classpath"/>
+        </path>
+    </target>
+
+    <!--
+    ====
+    INIT
+    ====
+    -->
+
+    <property name="app.name" value="sigmarest"/>
+    <property name="build.home" value="build"/>
+    <property name="build.classes" value="${build.home}/classes"/>
+    <property name="build.lib" value="${build.home}/lib"/>
+    <property environment="env"/>
+    <property name="git.home" value="${env.ONTOLOGYPORTAL_GIT}"/>
+    <property name="tomcat.home" value="${env.CATALINA_HOME}"/>
+    <property name="tptp.home" value="${git.home}/TPTP-ANTLR"/>
+    <property name="sigma.home" value="${env.SIGMA_HOME}"/>
+    <property name="kbs.home" value="${sigma.home}/KBs" />
+    <property name="dist.home" value="${tomcat.home}/webapps"/>
+    <property name="deploy.home" value="${tomcat.home}/webapps/${app.name}"/>
+    <property name="deploy.classes" value="${deploy.home}/WEB-INF/classes"/>
+    <property name="deploy.lib" value="${deploy.home}/WEB-INF/lib"/>
+    <property name="dist.war" value="sigmarest.war"/>
+
+    <echo message="CATALINA_HOME is set to = ${env.CATALINA_HOME}"/>
+    <echo message="SIGMA_HOME is set to = ${env.SIGMA_HOME}"/>
+    <echo message="SIGMA_SRC is set to = ${env.SIGMA_SRC}"/>
+    <echo message="KBs_HOME is set to = ${kbs.home}" />
+    <echo>Java Version via Ant: ${ant.java.version}</echo>
+    <echo>Java Version System Prop: ${java.version}</echo>
+
+    <path id="core.sourcepath">
+        <pathelement path="src/com/articulate/sigma/rest"/>
+    </path>
+
+    <target name="init" depends="init-ivy">
+        <condition property="jdk21+">
+            <javaversion atleast="21"/>
+        </condition>
+        <fail message="Unsupported JDK version: ${ant.java.version}. Please use a Java Development Kit (JDK) version 21 or greater."
+              unless="jdk21+">
+        </fail>
+        <condition property="nojdk">
+            <contains string="${java.home}" substring="jdk"/>
+        </condition>
+        <fail message="Please install a Java Development Kit (JDK) version 21 or greater."
+              unless="nojdk">
+        </fail>
+    </target>
+
+    <target name="sigma" depends="init">
         <ant antfile="../sigmakee/build.xml" inheritAll="false" target="all" />
         <copy todir="${basedir}/lib" file="${env.SIGMA_SRC}/build/sigmakee.jar" />
     </target>
 
-    <target name="TPTP" depends="init">
+    <target name="TPTP" depends="sigma">
         <echo message="SIGMA_HOME is set to = ${sigma.home}"/>
         <echo message="TPTP is set to = ${tptp.home}"/>
-        <ant antfile="${tptp.home}/build.xml" inheritAll="false" target="all"/>
-        <ant antfile="../SigmaUtils/build.xml" inheritAll="false" target="all"/>
         <copy todir="${basedir}/lib" file="${tptp.home}/tptp.jar"/>
         <copy todir="${basedir}/lib" file="../SigmaUtils/sigmaUtils.jar"/>
     </target>
 
-    <target name="compile" depends="init,sigma,TPTP" description="Compile the project and place in ${build.classes}.">
+    <target name="compile" depends="TPTP" description="Compile the project and place in ${build.classes}.">
         <mkdir dir="${build.classes}"/>
-        <javac destdir="${build.classes}" debug="on" optimize="on" deprecation="on" classpathref="compile.classpath">
+        <javac destdir="${build.classes}"
+               debug="on"
+               optimize="on"
+               deprecation="on"
+               includeantruntime="false"
+               classpathref="compile.classpath">
             <src refid="core.sourcepath"/>
         </javac>
-        <copy todir="${build.lib}">
+<!--        <copy todir="${build.lib}">
             <fileset dir="${basedir}/lib" />
-        </copy>
+        </copy>-->
     </target>
 
     <target name="web_deploy" depends="compile" description="deploy code to sigma.war">
         <!-- Make the root. -->
         <mkdir dir="${deploy.home}"/>
 
-        <!-- Delete the old code -->
-        <delete includeemptydirs="true" failonerror="false">
-            <fileset dir="${deploy.home}"/>
-            <fileset dir="${tomcat.home}/work/Catalina/localhost/${app.name}"/>
-        </delete>
-
-        <copy todir="${deploy.home}/WEB-INF">
+<!--        <copy todir="${deploy.home}/WEB-INF">
             <fileset file="${basedir}/web.xml" />
         </copy>
 
@@ -67,26 +132,26 @@
             <fileset file="${basedir}/lib/*.jar" />
         </copy>
 
-        <!-- Create WEB-INF/classes/ and copy all the loose classes to it. -->
+         Create WEB-INF/classes/ and copy all the loose classes to it.
         <mkdir dir="${deploy.classes}"/>
         <copy todir="${deploy.classes}">
             <fileset dir="${build.classes}"/>
         </copy>
 
-        <!-- Create WEB-INF/lib/ and copy over the needed jar files. -->
+         Create WEB-INF/lib/ and copy over the needed jar files.
         <mkdir dir="${deploy.lib}"/>
         <copy todir="${deploy.lib}">
             <fileset dir="${basedir}/lib" />
-        </copy>
+        </copy>-->
     </target>
 
     <target name="dist" depends="web_deploy" description="Create the *.war file and place in ${build.home}.">
         <war warfile="${dist.home}/${dist.war}" webxml="web.xml">
-            <lib dir="${deploy.lib}"/>
-            <classes dir="${deploy.classes}"/>
+            <lib dir="lib"/>
+            <classes dir="${build.classes}"/>
         </war>
         <jar destfile="${build.home}/sigmarest.jar">
-            <fileset dir="${deploy.classes}"/>
+            <fileset dir="${build.classes}"/>
         </jar>
     </target>
 
@@ -97,16 +162,19 @@
         </tstamp>
         <echo>the system date/time is ${TODAY_US}</echo>
     </target>
-
-    <path id="core.sourcepath">
-        <pathelement path="src/com/articulate/sigma/rest"/>
-    </path>
-
-    <path id="compile.classpath">
-        <fileset dir="${basedir}/lib">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
+    <target name="clean" description="Delete old build, lib, dist and deployed web aritifacts">
+        <delete includeemptydirs="true" failonerror="false">
+            <fileset dir="${build.home}"/> <!-- avoid problems with package name changes by deleting everything -->
+            <!-- Delete the old web code -->
+            <fileset dir="${deploy.home}"/>
+            <fileset dir="${tomcat.home}/work/Catalina/localhost/${app.name}"/>
+            <!-- Prune out of date dependencies -->
+            <fileset dir="${basedir}/lib">  <!-- keep ./lib -->
+                <include name="*.jar"/>
+            </fileset>
+        </delete>
+        <delete file="${dist.war}"/>
+    </target>
 
 </project>
 

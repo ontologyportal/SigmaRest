@@ -191,7 +191,7 @@ public class SigmaResource {
     public Response getNearestTerms(
             @DefaultValue("Object") @QueryParam("term") String term) {
 
-        ArrayList<String> response = null;
+        List<String> response;
         if (Character.isLowerCase(term.charAt(0)))
             response = kb.getNearestRelations(term);
         else
