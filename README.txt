@@ -9,9 +9,9 @@ http://localhost:8080/sigmarest/resources/init
 
 then test with
 
-http://localhost:8080/sigmarest/resources/test?test=WearableItem
+http://localhost:8080/sigmarest/resources/term?term=WearableItem
 
-you should see a list of SUMO subclasses such as 
+you should see a list of SUMO subclasses such as
 
 [Sock, UniformClothing, Dishdashah, Oqal, Jewelry, SafetyHarness,
 Sleeve, Cloak, Tagiyyah, Kufiyyah, Shirt, Veil, OutdoorClothing,

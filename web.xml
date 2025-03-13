@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app
-   xmlns="http://java.sun.com/xml/ns/javaee" version="3.0"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-        http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"> 
-  <servlet>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+  version="4.0"
+  metadata-complete="true">
+
+    <display-name>SigmaRest</display-name>
+    <description>
+        A RESTful interface shell project for Sigma and SigmaNLP
+    </description>
+    <servlet>
     <servlet-name>RestfulContainer</servlet-name>
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-    <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>com.articulate.sigma.rest</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
+    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>com.articulate.sigma.rest</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
     <servlet-name>RestfulContainer</servlet-name>
-    <url-pattern>/resources/*</url-pattern>
-  </servlet-mapping>
+        <url-pattern>/resources/*</url-pattern>
+    </servlet-mapping>
 </web-app>
