@@ -2,7 +2,7 @@ package com.articulate.sigma.rest;
 
 /*
 http://localhost:8080/sigmarest/resources/helloworld
- */
+*/
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
@@ -19,6 +19,7 @@ import java.util.*;
 
 import org.json.simple.JSONAware;
 import org.json.simple.JSONValue;
+
 import tptp_parser.TPTPFormula;
 
 @Path("/")
@@ -37,7 +38,7 @@ public class SigmaResource {
             SigmaResource.kb = KBmanager.getMgr().getKB("SUMO");
         }
         catch (Exception e) {
-            System.out.println(e.toString());
+            System.err.println(e.toString());
             return Response.serverError().entity(e.toString()).build();
         }
         return Response.ok("Sigma init completed").build();
@@ -56,7 +57,7 @@ public class SigmaResource {
             kb.deleteUserAssertionsAndReload();
         }
         catch (Exception e) {
-            System.out.println(e.toString());
+            System.err.println(e.toString());
             return Response.serverError().entity(e.toString()).build();
         }
         return Response.ok("Sigma reset completed").build();
@@ -141,9 +142,10 @@ public class SigmaResource {
     private String toJSON(Map<String, String> data) {
 
         String tor = "{";
+        String key, value;
         for (Map.Entry<String, String> entry : data.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
+            key = entry.getKey();
+            value = entry.getValue();
 
             if (tor.length() > 1)
                 tor += ", ";
@@ -266,14 +268,13 @@ public class SigmaResource {
     public Response posting(InputStream incomingData) {
 
         StringBuilder crunchifyBuilder = new StringBuilder();
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(incomingData));
-            String line = null;
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(incomingData))) {
+            String line;
             while ((line = in.readLine()) != null) {
                 crunchifyBuilder.append(line);
             }
         } catch (Exception e) {
-            System.out.println("Error Parsing: - ");
+            System.err.println("Error Parsing: - ");
         }
         System.out.println("Data Received: " + crunchifyBuilder.toString());
 
