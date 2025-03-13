@@ -2,3 +2,5 @@
 /build/
 /lib/
 /sigmarest.jar
+.idea/*
+SigmaRest.iml
