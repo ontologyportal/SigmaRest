@@ -131,11 +131,14 @@
     ======
     -->
 
-    <target name="dist" depends="compile" description="Create the *.war file and place in ${build.home}.">
-        <war warfile="${dist.home}/${dist.war}" webxml="web.xml">
-            <lib dir="lib"/>
-            <classes dir="${build.classes}"/>
+    <target name="dist" depends="compile" description="Create the *.war file and place in ${dist.home}.">
+        <war warfile="${dist.home}/${dist.war}"
+             webxml="web.xml">
             <metainf file="context.xml"/>
+            <lib dir="${basedir}/lib">
+                <exclude name="tomcat-servlet-api*"/>
+            </lib>
+            <classes dir="${build.classes}"/>
         </war>
         <jar destfile="${build.home}/${dist.jar}">
             <fileset dir="${build.classes}"/>
