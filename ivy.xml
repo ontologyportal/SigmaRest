@@ -26,6 +26,8 @@
         <dependency org="org.glassfish.jersey.core" name="jersey-server" rev="2.35" conf="api->default"/>
         <dependency org="javax.mail" name="mail" rev="1.4.7" transitive="false" conf="api->default"/>
         <dependency org="org.antlr" name="antlr4-runtime" rev="4.9.3" transitive="false" conf="api->default"/>
+        <!-- https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-servlet-api -->
+        <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="9.0.97" transitive="false" conf="api->default"/>
         <!--<dependency org="junit" name="junit" rev="4.13.2" conf="test->default"/>-->
     </dependencies>
 </ivy-module>
