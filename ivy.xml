@@ -15,6 +15,10 @@
         <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
         <dependency org="com.h2database" name="h2" rev="2.3.232" transitive="false" conf="api->default"/>
         <dependency org="com.igormaznitsa" name="java-prolog-parser" rev="2.0.2" transitive="false" conf="api->default"/>
+        <!-- https://mvnrepository.com/artifact/com.sun.istack/istack-commons-runtime -->
+        <dependency org="com.sun.istack" name="istack-commons-runtime" rev="3.0.7" conf="api->default"/>
+        <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+        <dependency org="com.sun.xml.bind" name="jaxb-impl" rev="2.4.0-b180830.0438" conf="api->default"/>
         <dependency org="edu.stanford.nlp" name="stanford-corenlp" rev="4.5.7" transitive="false" conf="api->default"/>
         <!-- https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-client -->
         <dependency org="org.glassfish.jersey.core" name="jersey-client" rev="2.35" conf="api->default"/>
@@ -24,7 +28,11 @@
         <dependency org="org.glassfish.jersey.inject" name="jersey-hk2" rev="2.35" conf="api->default"/>
         <!-- https://mvnrepository.com/artifact/org.glassfish.jersey.core/jersey-server -->
         <dependency org="org.glassfish.jersey.core" name="jersey-server" rev="2.35" conf="api->default"/>
-        <dependency org="javax.mail" name="mail" rev="1.4.7" transitive="false" conf="api->default"/>
+        <!-- https://mvnrepository.com/artifact/javax.activation/javax.activation-api -->
+        <dependency org="javax.activation" name="javax.activation-api" rev="1.2.0" conf="api->default"/>
+        <!--<dependency org="javax.mail" name="mail" rev="1.4.7" transitive="false" conf="api->default"/>-->
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency org="javax.xml.bind" name="jaxb-api" rev="2.4.0-b180830.0359" conf="api->default"/>
         <dependency org="org.antlr" name="antlr4-runtime" rev="4.9.3" transitive="false" conf="api->default"/>
         <!-- https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-servlet-api -->
         <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="9.0.97" transitive="false" conf="api->default"/>
