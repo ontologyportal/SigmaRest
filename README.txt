@@ -3,7 +3,7 @@ A RESTful interface shell project for Sigma and SigmaNLP
 
 This assumes you've already installed Tomcat and SigmaKEE.  Just compile
 this project with Ant and restart Tomcat.  Then invoke the following
-in your browser to initialize Sigma
+in your browser to initialize SigmaRest
 
 http://localhost:8080/sigmarest/resources/init
 
