@@ -278,8 +278,42 @@ public class SigmaResource {
         }
         System.out.println("Data Received: " + crunchifyBuilder.toString());
 
-        // return HTTP response 200 in case of success
+        // return HTTP response 200 in case of suc  cess
         return Response.status(200).entity(crunchifyBuilder.toString()).build();
     }
+
+
+    /*****************************************************************
+     * Validate a SUO-KIF formula using the same logic as the -v flag
+     */
+    @Path("validateFormula")
+    @GET
+    @Produces("application/json")
+    public Response validateFormula(@QueryParam("formula") String formula) {
+
+        if (formula == null || formula.trim().isEmpty()) {
+            return Response.status(400).entity("{\"error\": \"Formula parameter is required.\"}").build();
+        }
+
+        KB kb = SigmaResource.kb;
+        KButilities.clearErrors();  // Reset error tracking before validation
+        boolean isValid = KButilities.isValidFormula(kb, formula);
+        Set<String> errors = KButilities.errors;
+
+        // Convert error set to a properly formatted JSON array
+        List<String> formattedErrors = new ArrayList<>();
+        for (String error : errors) {
+            formattedErrors.add(error.replace("\"", "\\\"")); // Escape quotes for valid JSON
+        }
+
+        // Construct JSON response
+        Map<String, Object> response = new HashMap<>();
+        response.put("valid", isValid);
+//        response.put("formula", formula);
+        response.put("errors", formattedErrors.isEmpty() ? Collections.singletonList("None") : formattedErrors);
+
+        return Response.ok(JSONValue.toJSONString(response)).build();
+    }
+
 
 }
