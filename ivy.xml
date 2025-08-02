@@ -30,7 +30,7 @@
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency org="javax.xml.bind" name="jaxb-api" rev="2.4.0-b180830.0359" conf="api->default"/>
         <!-- https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-servlet-api -->
-        <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="9.0.97" transitive="false" conf="api->default"/>
+        <dependency org="org.apache.tomcat" name="tomcat-servlet-api" rev="9.0.107" transitive="false" conf="api->default"/>
         <!--<dependency org="junit" name="junit" rev="4.13.2" conf="test->default"/>-->
     </dependencies>
 </ivy-module>
